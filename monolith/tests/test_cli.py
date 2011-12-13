@@ -1,4 +1,5 @@
 import sys
+import mock
 import argparse
 import unittest
 from monolith.cli.base import ExecutionManager
@@ -23,6 +24,11 @@ class TestExecutionManager(unittest.TestCase):
 
     def test_init_stderr(self):
         self.assertEqual(self.manager.stderr, sys.stderr)
+
+    def test_default_argv(self):
+        with mock.patch.object(sys, 'argv', ['vcs', 'foo', 'bar']):
+            manager = ExecutionManager()
+            self.assertEqual(manager.argv, ['foo', 'bar'])
 
     def test_get_usage(self):
         self.manager.usage = 'foobar baz'
