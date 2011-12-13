@@ -1,6 +1,7 @@
 import sys
 import argparse
 from collections import namedtuple
+from collections import OrderedDict
 
 
 Argument = namedtuple('Argument', 'args kwargs')
@@ -33,6 +34,15 @@ class ExecutionManager(object):
     def register(self, command):
         name = command().get_name()
         self.registry[name] = command
+
+    def get_commands(self):
+        """
+        Returns commands stored in the registry (sorted by name).
+        """
+        commands = OrderedDict()
+        for cmd in sorted(self.registry.keys()):
+            commands[cmd] = self.registry[cmd]
+        return commands
 
 
 class BaseCommand(object):

@@ -46,6 +46,16 @@ class TestExecutionManager(unittest.TestCase):
         self.manager.register(Command)
         self.assertEqual(self.manager.registry, {'foobar': Command})
 
+    def test_get_commands(self):
+        FooCommand = type('FooCommand', (BaseCommand,), {'name': 'foo'})
+        BarCommand = type('BarCommand', (BaseCommand,), {'name': 'bar'})
+        self.manager.register(FooCommand)
+        self.manager.register(BarCommand)
+        self.assertEqual(self.manager.get_commands(), {
+            'bar': BarCommand,
+            'foo': FooCommand,
+        })
+
 
 class TestBaseCommand(unittest.TestCase):
 
