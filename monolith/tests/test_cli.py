@@ -1,3 +1,4 @@
+import sys
 import argparse
 import unittest
 from monolith.cli.base import ExecutionManager
@@ -16,6 +17,12 @@ class TestExecutionManager(unittest.TestCase):
 
     def test_init_prog_name(self):
         self.assertEqual(self.manager.prog_name, 'foobar')
+
+    def test_init_stdout(self):
+        self.assertEqual(self.manager.stdout, sys.stdout)
+
+    def test_init_stderr(self):
+        self.assertEqual(self.manager.stderr, sys.stderr)
 
     def test_get_usage(self):
         self.manager.usage = 'foobar baz'
