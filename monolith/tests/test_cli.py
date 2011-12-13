@@ -12,23 +12,21 @@ class DummyCommand(BaseCommand):
 class TestExecutionManager(unittest.TestCase):
 
     def setUp(self):
-        self.manager = ExecutionManager()
+        self.manager = ExecutionManager(['foobar'])
 
-    def test_get_prog(self):
-        self.manager.prog = 'foobar'
-        self.assertEqual(self.manager.get_prog(), 'foobar')
+    def test_init_prog_name(self):
+        self.assertEqual(self.manager.prog_name, 'foobar')
 
     def test_get_usage(self):
         self.manager.usage = 'foobar baz'
         self.assertEqual(self.manager.get_usage(), 'foobar baz')
 
     def test_get_parser(self):
-        self.manager.prog = 'foo'
-        self.manager.usage = 'bar'
+        self.manager.usage = 'foo bar'
         parser = self.manager.get_parser()
         self.assertIsInstance(parser, argparse.ArgumentParser)
-        self.assertEqual(parser.prog, 'foo')
-        self.assertEqual(parser.usage, 'bar')
+        self.assertEqual(parser.prog, 'foobar') # argv[0]
+        self.assertEqual(parser.usage, 'foo bar')
 
     def test_register(self):
         Command = type('Command', (BaseCommand,), {'name': 'foobar'})

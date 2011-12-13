@@ -1,3 +1,4 @@
+import sys
 import argparse
 from collections import namedtuple
 
@@ -10,20 +11,20 @@ def arg(*args, **kwargs):
 
 
 class ExecutionManager(object):
-    prog = 'PROG'
     usage = 'USAGE'
 
-    def __init__(self):
+    def __init__(self, argv=None):
+        if argv is None:
+            argv = [a for a in sys.argv]
+        self.prog_name = argv[0]
+        self.argv = argv[1:]
         self.registry = {}
-
-    def get_prog(self):
-        return self.prog
 
     def get_usage(self):
         return self.usage
 
     def get_parser(self):
-        parser = argparse.ArgumentParser(prog=self.get_prog(),
+        parser = argparse.ArgumentParser(prog=self.prog_name,
             usage=self.get_usage())
         return parser
 
