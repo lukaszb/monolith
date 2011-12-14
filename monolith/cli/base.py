@@ -1,7 +1,7 @@
 import sys
 import argparse
 from collections import namedtuple
-from collections import OrderedDict
+from monolith.compat import OrderedDict
 
 
 Argument = namedtuple('Argument', 'args kwargs')

@@ -1,7 +1,7 @@
 import sys
 import mock
 import argparse
-import unittest
+from monolith.compat import unittest
 from monolith.cli.base import ExecutionManager
 from monolith.cli.base import BaseCommand
 from monolith.cli.base import arg

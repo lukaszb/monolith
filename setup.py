@@ -14,7 +14,7 @@ except IOError as err:
 
 install_requires = []
 if sys.version_info < (2, 7):
-    install_requires.append('unittest2')
+    install_requires.extend(('unittest2', 'argparse'))
 
 setup(
     name='monolith',
