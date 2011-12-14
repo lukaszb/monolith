@@ -6,6 +6,7 @@ This is completely fake command.
 from monolith.cli import ExecutionManager
 from monolith.cli import LabelCommand
 from monolith.cli import SingleLabelCommand
+from monolith.cli import arg
 
 
 class AddCommand(LabelCommand):
@@ -17,9 +18,15 @@ class AddCommand(LabelCommand):
 
 class InitCommand(SingleLabelCommand):
     name = 'init'
+    label = 'directory'
+    label_required = False
+    label_default = '.'
+    args = SingleLabelCommand.args + [
+        arg('--bare', help='Create a bare repository.', default=False, action='store_true'),
+    ]
 
     def handle_label(self, label, namespace):
-        print "Initializing git repository at %s.git" % label
+        print "Initialized empty Git repository in %s.git" % label
 
 
 def main():

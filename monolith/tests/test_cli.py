@@ -5,6 +5,7 @@ import unittest
 from monolith.cli.base import ExecutionManager
 from monolith.cli.base import BaseCommand
 from monolith.cli.base import arg
+from StringIO import StringIO
 
 
 class DummyCommand(BaseCommand):
@@ -14,16 +15,19 @@ class DummyCommand(BaseCommand):
 class TestExecutionManager(unittest.TestCase):
 
     def setUp(self):
-        self.manager = ExecutionManager(['foobar'])
+        self.manager = ExecutionManager(['foobar'], stdout=StringIO(),
+            stderr=StringIO())
 
     def test_init_prog_name(self):
         self.assertEqual(self.manager.prog_name, 'foobar')
 
     def test_init_stdout(self):
-        self.assertEqual(self.manager.stdout, sys.stdout)
+        manager = ExecutionManager()
+        self.assertEqual(manager.stdout, sys.stdout)
 
     def test_init_stderr(self):
-        self.assertEqual(self.manager.stderr, sys.stderr)
+        manager = ExecutionManager()
+        self.assertEqual(manager.stderr, sys.stderr)
 
     def test_default_argv(self):
         with mock.patch.object(sys, 'argv', ['vcs', 'foo', 'bar']):
@@ -55,6 +59,31 @@ class TestExecutionManager(unittest.TestCase):
             'bar': BarCommand,
             'foo': FooCommand,
         })
+
+    def test_run_command(self):
+
+        class Command(BaseCommand):
+            name = 'init'
+            handle = mock.Mock()
+
+        self.manager.register(Command)
+        self.manager.run_command('init')
+        self.assertTrue(Command.handle.called)
+
+    def test_run_command_with_args(self):
+
+        class Command(BaseCommand):
+            args = [
+                arg('-f', '--force', action='store_true', default=False),
+            ]
+            name = 'add'
+            handle = mock.Mock()
+
+        self.manager.register(Command)
+        self.manager.run_command('add', '-f')
+        self.assertTrue(Command.handle.called)
+        namespace = Command.handle.call_args[0][0]
+        self.assertTrue(namespace.force)
 
 
 class TestBaseCommand(unittest.TestCase):

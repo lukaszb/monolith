@@ -29,6 +29,16 @@ class ExecutionManager(object):
     def get_parser(self):
         parser = argparse.ArgumentParser(prog=self.prog_name,
             usage=self.get_usage())
+        subparsers = parser.add_subparsers(
+            title='subcommands',
+        )
+        for Command in self.registry.values():
+            cmd = Command()
+            cmdparser = subparsers.add_parser(cmd.get_name(), help=cmd.help)
+            for argument in cmd.args:
+                cmdparser.add_argument(*argument.args, **argument.kwargs)
+            cmdparser.set_defaults(func=cmd.handle)
+
         return parser
 
     def register(self, command):
@@ -44,11 +54,33 @@ class ExecutionManager(object):
             commands[cmd] = self.registry[cmd]
         return commands
 
+    def run_command(self, cmd, *args):
+        """
+        Runs command.
+
+        :param cmd: command to run (key at the registry)
+        :param argv: arguments passed to the command
+        """
+        argv = [cmd] + list(args)
+        parser = self.get_parser()
+        namespace = parser.parse_args(argv)
+        namespace.func(namespace)
+
+    def execute(self):
+        parser = self.get_parser()
+        namespace = parser.parse_args()
+        namespace.func(namespace)
+
 
 class BaseCommand(object):
+    help = ''
+    args = []
 
     def get_name(self):
         return getattr(self, 'name', self.__class__.__name__.lower())
+
+    def handle(self, namespace):
+        raise NotImplementedError
 
 
 
@@ -67,11 +99,11 @@ class LabelCommand(BaseCommand):
 
 class SingleLabelCommand(BaseCommand):
     args = [
-        arg('label', nargs=1),
+        arg('label', default='.', nargs='?'),
     ]
 
     def handle(self, namespace):
-        self.handle_label(label, namespace)
+        self.handle_label(namespace.label, namespace)
 
     def handle_label(self, label, namespace):
         raise NotImplementedError
