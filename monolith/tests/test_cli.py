@@ -60,17 +60,17 @@ class TestExecutionManager(unittest.TestCase):
             'foo': FooCommand,
         })
 
-    def test_run_command(self):
+    def test_call_command(self):
 
         class Command(BaseCommand):
             name = 'init'
             handle = mock.Mock()
 
         self.manager.register(Command)
-        self.manager.run_command('init')
+        self.manager.call_command('init')
         self.assertTrue(Command.handle.called)
 
-    def test_run_command_with_args(self):
+    def test_call_command_with_args(self):
 
         class Command(BaseCommand):
             args = [
@@ -80,7 +80,7 @@ class TestExecutionManager(unittest.TestCase):
             handle = mock.Mock()
 
         self.manager.register(Command)
-        self.manager.run_command('add', '-f')
+        self.manager.call_command('add', '-f')
         self.assertTrue(Command.handle.called)
         namespace = Command.handle.call_args[0][0]
         self.assertTrue(namespace.force)

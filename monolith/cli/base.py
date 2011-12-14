@@ -54,12 +54,12 @@ class ExecutionManager(object):
             commands[cmd] = self.registry[cmd]
         return commands
 
-    def run_command(self, cmd, *args):
+    def call_command(self, cmd, *args):
         """
-        Runs command.
+        Runs a command.
 
         :param cmd: command to run (key at the registry)
-        :param argv: arguments passed to the command
+        :param args: arguments that would be passed to the command
         """
         argv = [cmd] + list(args)
         parser = self.get_parser()
