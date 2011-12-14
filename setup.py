@@ -2,7 +2,6 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-vcs = __import__('vcs')
 readme_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
     'README.rst'))
 
@@ -19,11 +18,11 @@ if sys.version_info < (2, 7):
 
 setup(
     name='monolith',
-    version=vcs.get_version(),
+    version='0.0.1',
     url='https://github.com/lukaszb/monolith',
     author='Lukasz Balcerzak',
     author_email='lukaszbalcerzak@gmail.com',
-    description=vcs.__doc__,
+    description='FOOBAR',
     long_description=long_description,
     zip_safe=False,
     packages=find_packages(),

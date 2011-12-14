@@ -1,0 +1,5 @@
+include README.rst
+include MANIFEST.in
+include run_tests_and_report.sh
+recursive-include monolith *.py
+prune examples
