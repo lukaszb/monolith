@@ -7,6 +7,7 @@ from monolith.cli.base import ExecutionManager
 from monolith.cli.base import BaseCommand
 from monolith.cli.base import LabelCommand
 from monolith.cli.base import SingleLabelCommand
+from monolith.cli.exceptions import AlreadyRegistered
 from io import StringIO
 
 
@@ -46,6 +47,12 @@ class TestExecutionManager(unittest.TestCase):
         Command = type('Command', (BaseCommand,), {'name': 'foobar'})
         self.manager.register(Command)
         self.assertEqual(self.manager.registry, {'foobar': Command})
+
+    def test_register_raise_if_command_with_same_name_registered(self):
+        Command = type('Command', (BaseCommand,), {'name': 'foobar'})
+        self.manager.register(Command)
+        with self.assertRaises(AlreadyRegistered):
+            self.manager.register(Command)
 
     def test_get_commands(self):
         FooCommand = type('FooCommand', (BaseCommand,), {'name': 'foo'})

@@ -2,6 +2,7 @@ import sys
 import argparse
 from collections import namedtuple
 from monolith.compat import OrderedDict
+from monolith.cli.exceptions import AlreadyRegistered
 
 
 Argument = namedtuple('Argument', 'args kwargs')
@@ -41,6 +42,9 @@ class ExecutionManager(object):
         return parser
 
     def register(self, command):
+        if command.name in self.registry:
+            raise AlreadyRegistered('Command %r is already registered'
+                % command.name)
         self.registry[command.name] = command
 
     def get_commands(self):
