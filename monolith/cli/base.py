@@ -34,16 +34,15 @@ class ExecutionManager(object):
         )
         for Command in self.registry.values():
             cmd = Command()
-            cmdparser = subparsers.add_parser(cmd.get_name(), help=cmd.help)
-            for argument in cmd.args:
+            cmdparser = subparsers.add_parser(cmd.name, help=cmd.help)
+            for argument in cmd.get_args():
                 cmdparser.add_argument(*argument.args, **argument.kwargs)
             cmdparser.set_defaults(func=cmd.handle)
 
         return parser
 
     def register(self, command):
-        name = command().get_name()
-        self.registry[name] = command
+        self.registry[command.name] = command
 
     def get_commands(self):
         """
@@ -54,30 +53,32 @@ class ExecutionManager(object):
             commands[cmd] = self.registry[cmd]
         return commands
 
-    def call_command(self, cmd, *args):
+    def call_command(self, cmd, *argv):
         """
         Runs a command.
 
         :param cmd: command to run (key at the registry)
-        :param args: arguments that would be passed to the command
+        :param argv: arguments that would be passed to the command
         """
-        argv = [cmd] + list(args)
         parser = self.get_parser()
-        namespace = parser.parse_args(argv)
+        args = [cmd] + list(argv)
+        namespace = parser.parse_args(args)
         namespace.func(namespace)
 
     def execute(self):
         parser = self.get_parser()
         namespace = parser.parse_args()
-        namespace.func(namespace)
+        if hasattr(namespace, 'func'):
+            namespace.func(namespace)
 
 
 class BaseCommand(object):
     help = ''
-    args = []
+    args = None
+    name = 'command'
 
-    def get_name(self):
-        return getattr(self, 'name', self.__class__.__name__.lower())
+    def get_args(self):
+        return self.args or []
 
     def handle(self, namespace):
         raise NotImplementedError
@@ -85,26 +86,47 @@ class BaseCommand(object):
 
 
 class LabelCommand(BaseCommand):
-    args = [
-        arg('labels', nargs='+'),
-    ]
+    labels_required = True
+
+    def get_labels_arg(self):
+        nargs = self.labels_required and '+' or '*'
+        return arg('labels', nargs=nargs)
+
+    def get_args(self):
+        return [self.get_labels_arg()]
 
     def handle(self, namespace):
         for label in namespace.labels:
             self.handle_label(label, namespace)
+        else:
+            self.handle_no_labels(namespace)
 
     def handle_label(self, label, namespace):
         raise NotImplementedError
 
+    def handle_no_labels(self, namespace):
+        pass
+
 
 class SingleLabelCommand(BaseCommand):
-    args = [
-        arg('label', default='.', nargs='?'),
-    ]
+    default_label_value = None
+
+    def get_label_arg(self):
+        return arg('label', default=self.default_label_value, nargs='?')
+
+    def get_args(self):
+        return [self.get_label_arg()]
 
     def handle(self, namespace):
         self.handle_label(namespace.label, namespace)
 
     def handle_label(self, label, namespace):
         raise NotImplementedError
+
+
+def get_command_name(command):
+    """
+    Returns name of the given ``command`` (either ``name`` attribute
+    or lower-cased name of the class).
+    """
 

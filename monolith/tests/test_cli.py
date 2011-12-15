@@ -2,9 +2,11 @@ import sys
 import mock
 import argparse
 from monolith.compat import unittest
+from monolith.cli.base import arg
 from monolith.cli.base import ExecutionManager
 from monolith.cli.base import BaseCommand
-from monolith.cli.base import arg
+from monolith.cli.base import LabelCommand
+from monolith.cli.base import SingleLabelCommand
 from io import StringIO
 
 
@@ -85,16 +87,96 @@ class TestExecutionManager(unittest.TestCase):
         namespace = Command.handle.call_args[0][0]
         self.assertTrue(namespace.force)
 
+    def test_execute_calls_handle_command(self):
+
+        class Command(BaseCommand):
+            args = [
+                arg('-f', '--force', action='store_true', default=False),
+            ]
+            name = 'add'
+            handle = mock.Mock()
+
+        self.manager.register(Command)
+        with mock.patch.object(sys, 'argv', ['prog', 'add', '-f']):
+            self.manager.execute()
+        namespace = Command.handle.call_args[0][0]
+        Command.handle.assert_called_once_with(namespace)
+
 
 class TestBaseCommand(unittest.TestCase):
 
-    def test_get_name_defaults_to_lower_cased_class_name(self):
-        cmd = type('Command', (BaseCommand,), {})()
-        self.assertEqual(cmd.get_name(), 'command')
+    def test_get_args(self):
+        Command = type('Command', (BaseCommand,), {'args': ['foo', 'bar']})
+        command = Command()
+        self.assertEqual(command.get_args(), ['foo', 'bar'])
 
-    def test_get_name(self):
-        cmd = type('Command', (BaseCommand,), {'name': 'foobar'})()
-        self.assertEqual(cmd.get_name(), 'foobar')
+    def test_handle_raises_error(self):
+        with self.assertRaises(NotImplementedError):
+            BaseCommand().handle(argparse.Namespace())
+
+class TestLabelCommand(unittest.TestCase):
+
+    def test_handle_raise_if_handle_label_not_implemented(self):
+        command = LabelCommand()
+        with self.assertRaises(NotImplementedError):
+            command.handle(argparse.Namespace(labels=['foo']))
+
+    def test_handle_calls_handle_label(self):
+        namespace = argparse.Namespace(labels=['foo', 'bar'])
+        command = LabelCommand()
+        command.handle_label = mock.Mock()
+        command.handle(namespace)
+        self.assertEqual(command.handle_label.call_args_list, [
+            arg('foo', namespace),
+            arg('bar', namespace),
+        ])
+
+    def test_labels_required_true(self):
+        Command = type('Command', (LabelCommand,), {'labels_required': True})
+        command = Command()
+        self.assertEqual(command.get_args()[0].kwargs.get('nargs'), '+')
+
+    def test_labels_required_false(self):
+        Command = type('Command', (LabelCommand,), {'labels_required': False})
+        command = Command()
+        self.assertEqual(command.get_args()[0].kwargs.get('nargs'), '*')
+
+    def test_handle_no_labels_called_if_no_labels_given(self):
+        Command = type('Command', (LabelCommand,), {'labels_required': False})
+        command = Command()
+        command.handle_no_labels = mock.Mock()
+        namespace = argparse.Namespace(labels=[])
+        command.handle(namespace)
+        command.handle_no_labels.assert_called_once_with(namespace)
+
+
+class TestSingleLabelCommand(unittest.TestCase):
+
+    def test_get_label_arg(self):
+        Command = type('Command', (SingleLabelCommand,), {})
+        label_arg = Command().get_label_arg()
+        self.assertEqual(label_arg, arg('label',
+            default=Command.default_label_value, nargs='?'))
+
+    def test_get_args(self):
+        Command = type('Command', (SingleLabelCommand,), {})
+        command = Command()
+        self.assertEqual(command.get_args(), [command.get_label_arg()])
+
+    def test_handle_raise_if_handle_label_not_implemented(self):
+        command = SingleLabelCommand()
+        with self.assertRaises(NotImplementedError):
+            command.handle(argparse.Namespace(label='foo'))
+
+    def test_handle_calls_handle_label(self):
+        namespace = argparse.Namespace(label='foobar')
+        command = SingleLabelCommand()
+        command.handle_label = mock.Mock()
+        command.handle(namespace)
+        self.assertEqual(command.handle_label.call_args_list, [
+            arg('foobar', namespace),
+        ])
+
 
 
 class TestArg(unittest.TestCase):
