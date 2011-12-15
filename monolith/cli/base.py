@@ -41,8 +41,8 @@ class ExecutionManager(object):
 
         return parser
 
-    def register(self, command):
-        if command.name in self.registry:
+    def register(self, command, force=False):
+        if not force and command.name in self.registry:
             raise AlreadyRegistered('Command %r is already registered'
                 % command.name)
         self.registry[command.name] = command

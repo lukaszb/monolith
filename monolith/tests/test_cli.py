@@ -54,6 +54,13 @@ class TestExecutionManager(unittest.TestCase):
         with self.assertRaises(AlreadyRegistered):
             self.manager.register(Command)
 
+    def test_register_respects_force_argument(self):
+        Command1 = type('Command', (BaseCommand,), {'name': 'foobar'})
+        Command2 = type('Command', (BaseCommand,), {'name': 'foobar'})
+        self.manager.register(Command1)
+        self.manager.register(Command2, force=True)
+        self.assertEqual(self.manager.registry['foobar'], Command2)
+
     def test_get_commands(self):
         FooCommand = type('FooCommand', (BaseCommand,), {'name': 'foo'})
         BarCommand = type('BarCommand', (BaseCommand,), {'name': 'bar'})
