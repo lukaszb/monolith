@@ -17,19 +17,14 @@ class DummyCommand(BaseCommand):
 class TestExecutionManager(unittest.TestCase):
 
     def setUp(self):
-        self.manager = ExecutionManager(['foobar'], stdout=StringIO(),
-            stderr=StringIO())
+        self.manager = ExecutionManager(['foobar'], file=StringIO())
 
     def test_init_prog_name(self):
         self.assertEqual(self.manager.prog_name, 'foobar')
 
-    def test_init_stdout(self):
+    def test_init_file(self):
         manager = ExecutionManager()
-        self.assertEqual(manager.stdout, sys.stdout)
-
-    def test_init_stderr(self):
-        manager = ExecutionManager()
-        self.assertEqual(manager.stderr, sys.stderr)
+        self.assertEqual(manager.file, sys.stderr)
 
     def test_default_argv(self):
         with mock.patch.object(sys, 'argv', ['vcs', 'foo', 'bar']):

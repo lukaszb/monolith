@@ -12,16 +12,15 @@ def arg(*args, **kwargs):
 
 
 class ExecutionManager(object):
-    usage = 'USAGE'
+    usage = None
 
-    def __init__(self, argv=None, stdout=None, stderr=None):
+    def __init__(self, argv=None, file=None):
         if argv is None:
             argv = [a for a in sys.argv]
         self.prog_name = argv[0]
         self.argv = argv[1:]
         self.registry = {}
-        self.stdout = stdout or sys.stdout
-        self.stderr = stderr or sys.stderr
+        self.file = file or sys.stderr
 
     def get_usage(self):
         return self.usage
@@ -74,7 +73,7 @@ class ExecutionManager(object):
 
 class BaseCommand(object):
     help = ''
-    args = None
+    args = []
     name = 'command'
 
     def get_args(self):
