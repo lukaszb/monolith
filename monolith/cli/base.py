@@ -41,11 +41,10 @@ class ExecutionManager(object):
 
         return parser
 
-    def register(self, command, force=False):
-        if not force and command.name in self.registry:
-            raise AlreadyRegistered('Command %r is already registered'
-                % command.name)
-        self.registry[command.name] = command
+    def register(self, name, command, force=False):
+        if not force and name in self.registry:
+            raise AlreadyRegistered('Command %r is already registered' % name)
+        self.registry[name] = command
 
     def get_commands(self):
         """

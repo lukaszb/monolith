@@ -44,31 +44,31 @@ class TestExecutionManager(unittest.TestCase):
         self.assertEqual(parser.usage, 'foo bar')
 
     def test_register(self):
-        Command = type('Command', (BaseCommand,), {'name': 'foobar'})
-        self.manager.register(Command)
-        self.assertEqual(self.manager.registry, {'foobar': Command})
+        Command = type('Command', (BaseCommand,), {})
+        self.manager.register('foo', Command)
+        self.assertEqual(self.manager.registry, {'foo': Command})
 
     def test_register_raise_if_command_with_same_name_registered(self):
-        Command = type('Command', (BaseCommand,), {'name': 'foobar'})
-        self.manager.register(Command)
+        Command = type('Command', (BaseCommand,), {})
+        self.manager.register('foobar', Command)
         with self.assertRaises(AlreadyRegistered):
-            self.manager.register(Command)
+            self.manager.register('foobar', Command)
 
     def test_register_respects_force_argument(self):
-        Command1 = type('Command', (BaseCommand,), {'name': 'foobar'})
-        Command2 = type('Command', (BaseCommand,), {'name': 'foobar'})
-        self.manager.register(Command1)
-        self.manager.register(Command2, force=True)
-        self.assertEqual(self.manager.registry['foobar'], Command2)
+        Command1 = type('Command', (BaseCommand,), {})
+        Command2 = type('Command', (BaseCommand,), {})
+        self.manager.register('foobar', Command1)
+        self.manager.register('foobar', Command2, force=True)
+        self.assertEqual(self.manager.registry.get('foobar'), Command2)
 
     def test_get_commands(self):
-        FooCommand = type('FooCommand', (BaseCommand,), {'name': 'foo'})
-        BarCommand = type('BarCommand', (BaseCommand,), {'name': 'bar'})
-        self.manager.register(FooCommand)
-        self.manager.register(BarCommand)
+        FooCommand = type('FooCommand', (BaseCommand,), {})
+        BarCommand = type('BarCommand', (BaseCommand,), {})
+        self.manager.register('foo', FooCommand)
+        self.manager.register('bar', BarCommand)
         self.assertEqual(self.manager.get_commands(), {
-            'bar': BarCommand,
             'foo': FooCommand,
+            'bar': BarCommand,
         })
 
     def test_call_command(self):
@@ -77,7 +77,7 @@ class TestExecutionManager(unittest.TestCase):
             name = 'init'
             handle = mock.Mock()
 
-        self.manager.register(Command)
+        self.manager.register('init', Command)
         self.manager.call_command('init')
         self.assertTrue(Command.handle.called)
 
@@ -90,7 +90,7 @@ class TestExecutionManager(unittest.TestCase):
             name = 'add'
             handle = mock.Mock()
 
-        self.manager.register(Command)
+        self.manager.register('add', Command)
         self.manager.call_command('add', '-f')
         self.assertTrue(Command.handle.called)
         namespace = Command.handle.call_args[0][0]
@@ -105,7 +105,7 @@ class TestExecutionManager(unittest.TestCase):
             name = 'add'
             handle = mock.Mock()
 
-        self.manager.register(Command)
+        self.manager.register('add', Command)
         with mock.patch.object(sys, 'argv', ['prog', 'add', '-f']):
             self.manager.execute()
         namespace = Command.handle.call_args[0][0]
