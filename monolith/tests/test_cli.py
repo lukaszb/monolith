@@ -165,7 +165,7 @@ class TestSingleLabelCommand(unittest.TestCase):
         Command = type('Command', (SingleLabelCommand,), {})
         label_arg = Command().get_label_arg()
         self.assertEqual(label_arg, arg('label',
-            default=Command.default_label_value, nargs='?'))
+            default=Command.label_default_value, nargs='?'))
 
     def test_get_args(self):
         Command = type('Command', (SingleLabelCommand,), {})
@@ -185,7 +185,6 @@ class TestSingleLabelCommand(unittest.TestCase):
         self.assertEqual(command.handle_label.call_args_list, [
             arg('foobar', namespace),
         ])
-
 
 
 class TestArg(unittest.TestCase):

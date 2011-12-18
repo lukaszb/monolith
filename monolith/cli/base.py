@@ -111,10 +111,10 @@ class LabelCommand(BaseCommand):
 
 
 class SingleLabelCommand(BaseCommand):
-    default_label_value = None
+    label_default_value = None
 
     def get_label_arg(self):
-        return arg('label', default=self.default_label_value, nargs='?')
+        return arg('label', default=self.label_default_value, nargs='?')
 
     def get_args(self):
         return [self.get_label_arg()]
