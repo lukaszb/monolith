@@ -23,6 +23,9 @@ class ExecutionManager(object):
         self.registry = {}
         self.file = file or sys.stderr
 
+        for name, Command in self.get_commands_to_register().items():
+            self.register(name, Command)
+
     def get_usage(self):
         return self.usage
 
@@ -54,6 +57,9 @@ class ExecutionManager(object):
         for cmd in sorted(self.registry.keys()):
             commands[cmd] = self.registry[cmd]
         return commands
+
+    def get_commands_to_register(self):
+        return {}
 
     def call_command(self, cmd, *argv):
         """
