@@ -16,9 +16,11 @@ install_requires = []
 if sys.version_info < (2, 7):
     install_requires.extend(('unittest2', 'argparse'))
 
+monolith = __import__('monolith')
+
 setup(
     name='monolith',
-    version='0.0.1',
+    version=monolith.get_version(),
     url='https://github.com/lukaszb/monolith',
     author='Lukasz Balcerzak',
     author_email='lukaszbalcerzak@gmail.com',

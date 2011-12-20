@@ -3,3 +3,5 @@
 *.pyc
 *.egg
 monolith.egg-info
+
+docs/build
