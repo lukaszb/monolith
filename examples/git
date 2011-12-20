@@ -20,7 +20,7 @@ class InitCommand(SingleLabelCommand):
     name = 'init'
     label = 'directory'
     label_required = False
-    label_default = '.'
+    label_default_value = '.'
     args = SingleLabelCommand.args + [
         arg('--bare', help='Create a bare repository.', default=False, action='store_true'),
     ]
@@ -31,8 +31,8 @@ class InitCommand(SingleLabelCommand):
 
 def main():
     manager = ExecutionManager()
-    manager.register(AddCommand)
-    manager.register(InitCommand)
+    manager.register('add', AddCommand)
+    manager.register('init', InitCommand)
     manager.execute()
 
 

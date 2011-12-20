@@ -35,9 +35,9 @@ class ExecutionManager(object):
         subparsers = parser.add_subparsers(
             title='subcommands',
         )
-        for Command in self.registry.values():
+        for name, Command in self.registry.items():
             cmd = Command()
-            cmdparser = subparsers.add_parser(cmd.name, help=cmd.help)
+            cmdparser = subparsers.add_parser(name, help=cmd.help)
             for argument in cmd.get_args():
                 cmdparser.add_argument(*argument.args, **argument.kwargs)
             cmdparser.set_defaults(func=cmd.handle)
@@ -118,12 +118,13 @@ class LabelCommand(BaseCommand):
 
 class SingleLabelCommand(BaseCommand):
     label_default_value = None
+    args = []
 
     def get_label_arg(self):
         return arg('label', default=self.label_default_value, nargs='?')
 
     def get_args(self):
-        return [self.get_label_arg()]
+        return self.args + [self.get_label_arg()]
 
     def handle(self, namespace):
         self.handle_label(namespace.label, namespace)
