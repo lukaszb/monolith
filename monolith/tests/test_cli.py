@@ -99,6 +99,19 @@ class TestExecutionManager(unittest.TestCase):
         self.manager.call_command('init')
         self.assertTrue(Command.handle.called)
 
+    def test_called_command_has_prog_name_properly_set(self):
+
+        prog_names = []
+
+        class Command(BaseCommand):
+            name = 'init'
+            def handle(self, namespace):
+                prog_names.append(self.prog_name)
+
+        self.manager.register('init', Command)
+        self.manager.call_command('init')
+        self.assertEqual(prog_names, ['foobar'])
+
     def test_call_command_with_args(self):
 
         class Command(BaseCommand):

@@ -36,7 +36,7 @@ class ExecutionManager(object):
             title='subcommands',
         )
         for name, Command in self.registry.items():
-            cmd = Command()
+            cmd = Command(self.prog_name)
             cmdparser = subparsers.add_parser(name, help=cmd.help)
             for argument in cmd.get_args():
                 cmdparser.add_argument(*argument.args, **argument.kwargs)
@@ -84,6 +84,9 @@ class BaseCommand(object):
     help = ''
     args = []
     name = 'command'
+
+    def __init__(self, prog_name=None):
+        self.prog_name = prog_name
 
     def get_args(self):
         return self.args or []
