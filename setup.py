@@ -13,8 +13,11 @@ except IOError as err:
     sys.exit(1)
 
 install_requires = []
+extra_kwargs = {}
 if sys.version_info < (2, 7):
     install_requires.extend(('unittest2', 'argparse'))
+if sys.version_info >= (3,):
+    extra_kwargs['use_2to3'] = True
 
 monolith = __import__('monolith')
 
@@ -36,8 +39,10 @@ setup(
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
-        'Programming Language :: Python',
         'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
     ],
+    **extra_kwargs
 )
 

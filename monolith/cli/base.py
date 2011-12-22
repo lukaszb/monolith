@@ -85,8 +85,9 @@ class BaseCommand(object):
     args = []
     name = 'command'
 
-    def __init__(self, prog_name=None):
-        self.prog_name = prog_name
+    def __init__(self, prog_name=None, stream=None):
+        self.prog_name = prog_name or ''
+        self.stream = stream or sys.stdout
 
     def get_args(self):
         return self.args or []
