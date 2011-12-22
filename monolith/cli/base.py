@@ -1,7 +1,9 @@
+import os
 import sys
 import argparse
 from collections import namedtuple
 from monolith.compat import OrderedDict
+from monolith.compat import unicode
 from monolith.cli.exceptions import AlreadyRegistered
 
 
@@ -12,16 +14,28 @@ def arg(*args, **kwargs):
     return Argument(args, kwargs)
 
 
+class Parser(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        self.stream = kwargs.pop('stream', sys.stderr)
+        super(Parser, self).__init__(*args, **kwargs)
+
+    def _print_message(self, message, file=None):
+        if file is None:
+            file = self.stream
+        super(Parser, self)._print_message(unicode(message), file)
+
+
 class ExecutionManager(object):
     usage = None
+    completion = False
 
-    def __init__(self, argv=None, file=None):
+    def __init__(self, argv=None, stream=None):
         if argv is None:
             argv = [a for a in sys.argv]
         self.prog_name = argv[0]
         self.argv = argv[1:]
         self.registry = {}
-        self.file = file or sys.stderr
+        self.stream = stream or sys.stderr
 
         for name, Command in self.get_commands_to_register().items():
             self.register(name, Command)
@@ -30,24 +44,25 @@ class ExecutionManager(object):
         return self.usage
 
     def get_parser(self):
-        parser = argparse.ArgumentParser(prog=self.prog_name,
-            usage=self.get_usage())
+        parser = Parser(prog=self.prog_name, usage=self.get_usage(),
+            stream=self.stream)
         subparsers = parser.add_subparsers(
             title='subcommands',
         )
-        for name, Command in self.registry.items():
-            cmd = Command(self.prog_name)
-            cmdparser = subparsers.add_parser(name, help=cmd.help)
-            for argument in cmd.get_args():
+        for name, command in self.registry.items():
+            cmdparser = subparsers.add_parser(name, help=command.help)
+            for argument in command.get_args():
                 cmdparser.add_argument(*argument.args, **argument.kwargs)
-            cmdparser.set_defaults(func=cmd.handle)
+            cmdparser.set_defaults(func=command.handle)
 
         return parser
 
-    def register(self, name, command, force=False):
+    def register(self, name, Command, force=False):
         if not force and name in self.registry:
             raise AlreadyRegistered('Command %r is already registered' % name)
+        command = Command(self.prog_name, self.stream)
         self.registry[name] = command
+        command.post_register(self)
 
     def get_commands(self):
         """
@@ -74,10 +89,18 @@ class ExecutionManager(object):
         namespace.func(namespace)
 
     def execute(self):
+        if self.completion:
+            self.autocomplete()
         parser = self.get_parser()
         namespace = parser.parse_args()
         if hasattr(namespace, 'func'):
             namespace.func(namespace)
+
+    def autocomplete(self):
+        if self.get_env_var_name() not in os.environ:
+            return ''
+        #words = os.environ['COMP_WORDS'].split()[1:]
+        sys.exit(1)
 
 
 class BaseCommand(object):
@@ -95,6 +118,8 @@ class BaseCommand(object):
     def handle(self, namespace):
         raise NotImplementedError
 
+    def post_register(self, manager):
+        pass
 
 
 class LabelCommand(BaseCommand):

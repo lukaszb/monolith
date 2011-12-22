@@ -33,3 +33,6 @@ class CompletionCommand(BaseCommand):
     def handle(self, namespace):
         self.stream.write(unicode(self.get_completion_snippet()))
 
+    def post_register(self, manager):
+        manager.completion = True
+

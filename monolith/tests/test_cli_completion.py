@@ -1,6 +1,11 @@
 import io
+import os
+import sys
+import mock
 import argparse
 from monolith.compat import unittest
+from monolith.cli.base import ExecutionManager
+from monolith.cli.base import BaseCommand
 from monolith.cli.completion import CompletionCommand
 
 
@@ -22,4 +27,25 @@ class TestCompletionCommand(unittest.TestCase):
         command.template = 'bar'
         command.handle(argparse.Namespace())
         self.assertEqual(stream.getvalue(), 'bar')
+
+    @mock.patch.object(os, 'environ', {'PROG_AUTO_COMPLETE': '1'})
+    @mock.patch.object(sys, 'argv', ['prog', 'a'])
+    def test_manager_execute_calls_autocomplete(self):
+        manager = ExecutionManager(['foobar'], stream=io.StringIO())
+        Command = type('Command', (BaseCommand,), {})
+        CompCommand = type('CompCommand', (CompletionCommand,), {})
+        CompCommand.autocomplete = mock.Mock()
+
+        manager.register('add', Command)
+        manager.register('annotate', Command)
+        manager.register('init', Command)
+        manager.register('completion', CompCommand)
+        stream = io.StringIO()
+
+        with mock.patch.object(sys, 'stderr', stream):
+            try:
+                manager.execute()
+            except SystemExit:
+                pass
+        manager.autocomplete.assert_called_once_with()
 

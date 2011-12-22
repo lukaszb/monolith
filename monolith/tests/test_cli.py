@@ -1,3 +1,4 @@
+import io
 import sys
 import mock
 import argparse
@@ -7,6 +8,7 @@ from monolith.cli.base import ExecutionManager
 from monolith.cli.base import BaseCommand
 from monolith.cli.base import LabelCommand
 from monolith.cli.base import SingleLabelCommand
+from monolith.cli.base import Parser
 from monolith.cli.exceptions import AlreadyRegistered
 from io import StringIO
 
@@ -18,14 +20,14 @@ class DummyCommand(BaseCommand):
 class TestExecutionManager(unittest.TestCase):
 
     def setUp(self):
-        self.manager = ExecutionManager(['foobar'], file=StringIO())
+        self.manager = ExecutionManager(['foobar'], stream=StringIO())
 
     def test_init_prog_name(self):
         self.assertEqual(self.manager.prog_name, 'foobar')
 
-    def test_init_file(self):
+    def test_init_stream(self):
         manager = ExecutionManager()
-        self.assertEqual(manager.file, sys.stderr)
+        self.assertEqual(manager.stream, sys.stderr)
 
     def test_default_argv(self):
         with mock.patch.object(sys, 'argv', ['vcs', 'foo', 'bar']):
@@ -42,11 +44,13 @@ class TestExecutionManager(unittest.TestCase):
         self.assertIsInstance(parser, argparse.ArgumentParser)
         self.assertEqual(parser.prog, 'foobar') # argv[0]
         self.assertEqual(parser.usage, 'foo bar')
+        self.assertEqual(parser.stream, self.manager.stream)
 
     def test_register(self):
         Command = type('Command', (BaseCommand,), {})
         self.manager.register('foo', Command)
-        self.assertEqual(self.manager.registry, {'foo': Command})
+        self.assertEqual(self.manager.registry.keys(), ['foo'])
+        self.assertEqual(self.manager.registry['foo'].__class__, Command)
 
     def test_register_raise_if_command_with_same_name_registered(self):
         Command = type('Command', (BaseCommand,), {})
@@ -59,17 +63,16 @@ class TestExecutionManager(unittest.TestCase):
         Command2 = type('Command', (BaseCommand,), {})
         self.manager.register('foobar', Command1)
         self.manager.register('foobar', Command2, force=True)
-        self.assertEqual(self.manager.registry.get('foobar'), Command2)
+        self.assertEqual(self.manager.registry.get('foobar').__class__, Command2)
 
     def test_get_commands(self):
         FooCommand = type('FooCommand', (BaseCommand,), {})
         BarCommand = type('BarCommand', (BaseCommand,), {})
         self.manager.register('foo', FooCommand)
         self.manager.register('bar', BarCommand)
-        self.assertEqual(self.manager.get_commands(), {
-            'foo': FooCommand,
-            'bar': BarCommand,
-        })
+        self.assertEqual(self.manager.get_commands().keys(), ['bar', 'foo'])
+        self.assertEqual(self.manager.get_commands()['bar'].__class__, BarCommand)
+        self.assertEqual(self.manager.get_commands()['foo'].__class__, FooCommand)
 
     def test_get_commands_to_register(self):
         FooCommand = type('FooCommand', (BaseCommand,), {})
@@ -84,10 +87,9 @@ class TestExecutionManager(unittest.TestCase):
                 }
 
         manager = Manager(['foobar'])
-        self.assertEqual(manager.registry, {
-            'foo': FooCommand,
-            'bar': BarCommand,
-        })
+        self.assertEqual(manager.registry.keys(), ['foo', 'bar'])
+        self.assertEqual(manager.registry['foo'].__class__, FooCommand)
+        self.assertEqual(manager.registry['bar'].__class__, BarCommand)
 
     def test_call_command(self):
 
@@ -153,6 +155,19 @@ class TestBaseCommand(unittest.TestCase):
     def test_handle_raises_error(self):
         with self.assertRaises(NotImplementedError):
             BaseCommand().handle(argparse.Namespace())
+
+    def test_post_register_hooks(self):
+        Command = type('Command', (BaseCommand,), {'args': ['foo', 'bar']})
+
+        class Command(BaseCommand):
+            def post_register(self, manager):
+                manager.completion = True
+
+        manager = ExecutionManager()
+        self.assertFalse(manager.completion)
+        manager.register('completion', Command)
+        self.assertTrue(manager.completion)
+
 
 class TestLabelCommand(unittest.TestCase):
 
@@ -225,4 +240,15 @@ class TestArg(unittest.TestCase):
 
     def test_kargs(self):
         self.assertEqual(arg(1, 2, 'foo', bar='baz').kwargs, {'bar': 'baz'})
+
+
+class TestParser(unittest.TestCase):
+
+    def setUp(self):
+        self.stream = io.StringIO()
+        self.parser = Parser(stream=self.stream)
+
+    def test_print_message_default_file(self):
+        self.parser._print_message('foobar')
+        self.assertEqual(self.stream.getvalue(), 'foobar')
 
