@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import sys
 try:
     import unittest2 as unittest
 except ImportError:
@@ -16,6 +17,12 @@ try:
 except NameError:
     basestring = unicode = str
 
+if sys.version_info < (2, 7):
+    from contextlib import nested
+else:
+    def nested(*context_managers):
+        return tuple(context_managers)
 
-__all__ = ['unittest', 'OrderedDict']
+
+__all__ = ['unittest', 'OrderedDict', 'nested', 'unicode']
 

@@ -35,4 +35,5 @@ class CompletionCommand(BaseCommand):
 
     def post_register(self, manager):
         manager.completion = True
+        manager.completion_env_var_name = self.get_env_var_name()
 

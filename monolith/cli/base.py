@@ -28,14 +28,16 @@ class Parser(argparse.ArgumentParser):
 class ExecutionManager(object):
     usage = None
     completion = False
+    completion_env_var_name = ''
 
-    def __init__(self, argv=None, stream=None):
+    def __init__(self, argv=None, stream=None, stdout=None):
         if argv is None:
             argv = [a for a in sys.argv]
         self.prog_name = argv[0]
         self.argv = argv[1:]
         self.registry = {}
         self.stream = stream or sys.stderr
+        self.stdout = stdout or sys.stdout
 
         for name, Command in self.get_commands_to_register().items():
             self.register(name, Command)
@@ -97,9 +99,23 @@ class ExecutionManager(object):
             namespace.func(namespace)
 
     def autocomplete(self):
-        if self.get_env_var_name() not in os.environ:
-            return ''
-        #words = os.environ['COMP_WORDS'].split()[1:]
+        if self.completion_env_var_name not in os.environ:
+            return
+        cwords = os.environ['COMP_WORDS'].split()[1:]
+        cword = int(os.environ['COMP_CWORD'])
+        try:
+            current = cwords[cword-1]
+        except IndexError:
+            current = ''
+        cmd_names = self.get_commands().keys()
+        try:
+            cmd_name = [w for w in cwords if w in cmd_names][0]
+        except IndexError:
+            cmd_name = None
+
+        self.stdout.write(unicode(' '.join(
+            [name for name in cmd_names if name.startswith(current)])))
+        #self.stdout.write(unicode('\n'))
         sys.exit(1)
 
 

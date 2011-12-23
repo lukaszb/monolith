@@ -19,6 +19,14 @@ class DummyCommand(BaseCommand):
 
 class TestExecutionManager(unittest.TestCase):
 
+    def assertRegistryClassesEqual(self, actual, expected):
+        self.assertEqual(list(sorted(actual)), list(sorted(expected)))
+        for key in actual:
+            self.assertEqual(actual[key].__class__, expected[key],
+                "Command class don't match for %r (it's %r but "
+                "expected %r)" % (key, actual[key].__class__,
+                expected[key]))
+
     def setUp(self):
         self.manager = ExecutionManager(['foobar'], stream=StringIO())
 
@@ -49,8 +57,7 @@ class TestExecutionManager(unittest.TestCase):
     def test_register(self):
         Command = type('Command', (BaseCommand,), {})
         self.manager.register('foo', Command)
-        self.assertEqual(self.manager.registry.keys(), ['foo'])
-        self.assertEqual(self.manager.registry['foo'].__class__, Command)
+        self.assertRegistryClassesEqual(self.manager.registry, {'foo': Command})
 
     def test_register_raise_if_command_with_same_name_registered(self):
         Command = type('Command', (BaseCommand,), {})
@@ -63,16 +70,19 @@ class TestExecutionManager(unittest.TestCase):
         Command2 = type('Command', (BaseCommand,), {})
         self.manager.register('foobar', Command1)
         self.manager.register('foobar', Command2, force=True)
-        self.assertEqual(self.manager.registry.get('foobar').__class__, Command2)
+        self.assertRegistryClassesEqual(self.manager.registry, {
+            'foobar': Command2})
 
     def test_get_commands(self):
         FooCommand = type('FooCommand', (BaseCommand,), {})
         BarCommand = type('BarCommand', (BaseCommand,), {})
         self.manager.register('foo', FooCommand)
         self.manager.register('bar', BarCommand)
-        self.assertEqual(self.manager.get_commands().keys(), ['bar', 'foo'])
-        self.assertEqual(self.manager.get_commands()['bar'].__class__, BarCommand)
-        self.assertEqual(self.manager.get_commands()['foo'].__class__, FooCommand)
+        self.assertEqual(list(self.manager.get_commands().keys()), ['bar', 'foo'])
+        self.assertRegistryClassesEqual(self.manager.get_commands(), {
+            'foo': FooCommand,
+            'bar': BarCommand,
+        })
 
     def test_get_commands_to_register(self):
         FooCommand = type('FooCommand', (BaseCommand,), {})
@@ -87,9 +97,10 @@ class TestExecutionManager(unittest.TestCase):
                 }
 
         manager = Manager(['foobar'])
-        self.assertEqual(manager.registry.keys(), ['foo', 'bar'])
-        self.assertEqual(manager.registry['foo'].__class__, FooCommand)
-        self.assertEqual(manager.registry['bar'].__class__, BarCommand)
+        self.assertRegistryClassesEqual(manager.registry, {
+            'foo': FooCommand,
+            'bar': BarCommand,
+        })
 
     def test_call_command(self):
 

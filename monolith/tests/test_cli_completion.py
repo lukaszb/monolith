@@ -28,24 +28,49 @@ class TestCompletionCommand(unittest.TestCase):
         command.handle(argparse.Namespace())
         self.assertEqual(stream.getvalue(), 'bar')
 
-    @mock.patch.object(os, 'environ', {'PROG_AUTO_COMPLETE': '1'})
-    @mock.patch.object(sys, 'argv', ['prog', 'a'])
-    def test_manager_execute_calls_autocomplete(self):
-        manager = ExecutionManager(['foobar'], stream=io.StringIO())
+    def test_post_register(self):
+        manager = ExecutionManager()
+        with mock.patch.object(CompletionCommand, 'get_env_var_name') as m:
+            m.return_value = 'FOO_AUTO_COMPLETE'
+            manager.register('completion', CompletionCommand)
+        self.assertTrue(manager.completion)
+        self.assertEqual(manager.completion_env_var_name, 'FOO_AUTO_COMPLETE')
+
+
+@mock.patch.object(os, 'environ', {'PROG_AUTO_COMPLETE': '1'})
+class TestAutocomplete(unittest.TestCase):
+
+    def setUp(self):
+        self.stream = io.StringIO()
+        self.stdout = io.StringIO()
+        self.manager = ExecutionManager(stream=self.stream, stdout=self.stdout)
+        self.manager
         Command = type('Command', (BaseCommand,), {})
         CompCommand = type('CompCommand', (CompletionCommand,), {})
-        CompCommand.autocomplete = mock.Mock()
 
-        manager.register('add', Command)
-        manager.register('annotate', Command)
-        manager.register('init', Command)
-        manager.register('completion', CompCommand)
+        self.manager.register('add', Command)
+        self.manager.register('annotate', Command)
+        self.manager.register('init', Command)
+        self.manager.register('completion', CompCommand)
+        self.manager.completion = True
+        self.manager.completion_env_var_name = 'PROG_AUTO_COMPLETE'
+
+    @mock.patch.object(sys, 'argv', ['prog', 'a'])
+    def test_manager_execute_calls_autocomplete(self):
+        self.manager.autocomplete = mock.Mock()
         stream = io.StringIO()
-
         with mock.patch.object(sys, 'stderr', stream):
-            try:
-                manager.execute()
-            except SystemExit:
-                pass
-        manager.autocomplete.assert_called_once_with()
+            with self.assertRaises(SystemExit):
+                self.manager.execute()
+        self.manager.autocomplete.assert_called_once_with()
+
+    @mock.patch.object(sys, 'argv', ['prog', 'a'])
+    def test_autocomplete_returns_completes_for_subcommands(self):
+        os.environ['COMP_WORDS'] = 'prog a'
+        os.environ['COMP_CWORD'] = '1'
+        stream = io.StringIO()
+        with mock.patch.object(sys, 'stderr', stream):
+            with self.assertRaises(SystemExit):
+                self.manager.execute()
+        self.assertEqual(self.stdout.getvalue(), 'add annotate')
 
