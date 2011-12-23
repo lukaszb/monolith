@@ -33,7 +33,7 @@ class ExecutionManager(object):
     def __init__(self, argv=None, stream=None, stdout=None):
         if argv is None:
             argv = [a for a in sys.argv]
-        self.prog_name = argv[0]
+        self.prog_name = os.path.basename(argv[0])
         self.argv = argv[1:]
         self.registry = {}
         self.stream = stream or sys.stderr
@@ -108,14 +108,11 @@ class ExecutionManager(object):
         except IndexError:
             current = ''
         cmd_names = self.get_commands().keys()
-        try:
-            cmd_name = [w for w in cwords if w in cmd_names][0]
-        except IndexError:
-            cmd_name = None
 
-        self.stdout.write(unicode(' '.join(
-            [name for name in cmd_names if name.startswith(current)])))
-        #self.stdout.write(unicode('\n'))
+        if current:
+            self.stdout.write(unicode(' '.join(
+                [name for name in cmd_names if name.startswith(current)])))
+
         sys.exit(1)
 
 

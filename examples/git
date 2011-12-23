@@ -7,6 +7,7 @@ from monolith.cli import ExecutionManager
 from monolith.cli import LabelCommand
 from monolith.cli import SingleLabelCommand
 from monolith.cli import arg
+from monolith.cli import CompletionCommand
 
 
 class AddCommand(LabelCommand):
@@ -33,6 +34,7 @@ def main():
     manager = ExecutionManager()
     manager.register('add', AddCommand)
     manager.register('init', InitCommand)
+    manager.register('completion', CompletionCommand),
     manager.execute()
 
 

@@ -4,6 +4,7 @@ import sys
 import mock
 import argparse
 from monolith.compat import unittest
+from monolith.cli.base import arg
 from monolith.cli.base import ExecutionManager
 from monolith.cli.base import BaseCommand
 from monolith.cli.completion import CompletionCommand
@@ -48,12 +49,22 @@ class TestAutocomplete(unittest.TestCase):
         Command = type('Command', (BaseCommand,), {})
         CompCommand = type('CompCommand', (CompletionCommand,), {})
 
-        self.manager.register('add', Command)
+        class AddCommand(BaseCommand):
+            args = BaseCommand.args + [
+                arg('-f', '--force', action='store_true', default=False),
+            ]
+
+        self.manager.register('add', AddCommand)
         self.manager.register('annotate', Command)
         self.manager.register('init', Command)
         self.manager.register('completion', CompCommand)
         self.manager.completion = True
         self.manager.completion_env_var_name = 'PROG_AUTO_COMPLETE'
+
+    @mock.patch.object(sys, 'argv', ['prog', 'a'])
+    def test_autocomplete_returns_none_if_env_var_not_defined(self):
+        with mock.patch.object(os, 'environ', {}):
+            self.assertEqual(self.manager.autocomplete(), None)
 
     @mock.patch.object(sys, 'argv', ['prog', 'a'])
     def test_manager_execute_calls_autocomplete(self):
@@ -73,4 +84,25 @@ class TestAutocomplete(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 self.manager.execute()
         self.assertEqual(self.stdout.getvalue(), 'add annotate')
+
+    @mock.patch.object(sys, 'argv', ['prog', 'a'])
+    def test_autocomplete_returns_none_if_wrong_COMP_CWORD_set(self):
+        os.environ['COMP_WORDS'] = 'prog a'
+        os.environ['COMP_CWORD'] = '3'
+        stream = io.StringIO()
+        with mock.patch.object(sys, 'stderr', stream):
+            with self.assertRaises(SystemExit):
+                self.manager.execute()
+        self.assertEqual(self.stdout.getvalue(), '')
+
+    # skip until we implement completion for subcommands' arguments
+    #@mock.patch.object(sys, 'argv', ['prog', 'add', '--fo'])
+    #def test_autocomplete_returns_completes_for_subcommands_args(self):
+        #os.environ['COMP_WORDS'] = 'prog add --fo'
+        #os.environ['COMP_CWORD'] = '2'
+        #stream = io.StringIO()
+        #with mock.patch.object(sys, 'stderr', stream):
+            #with self.assertRaises(SystemExit):
+                #self.manager.execute()
+        #self.assertEqual(self.stdout.getvalue(), '--force')
 
