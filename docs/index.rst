@@ -11,8 +11,12 @@
 .. toctree::
     :maxdepth: 2
 
+    usage
     installation
+    development
     license
+
+    api/index
 
 
 Indices and tables

@@ -1,3 +1,7 @@
+"""
+This module provides utilities or wraps existing modules/packages into
+tools universal across supported Python versions.
+"""
 from __future__ import unicode_literals
 from __future__ import print_function
 

@@ -24,7 +24,7 @@ monolith = __import__('monolith')
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest']
 try:
     import rst2pdf
     if rst2pdf.version >= '0.16':
@@ -104,7 +104,7 @@ pygments_style = 'sphinx'
 # Sphinx are currently 'default' and 'sphinxdoc'.
 #html_theme = 'default'
 # Theme URL: https://github.com/coordt/ADCtheme/ 
-#html_theme = 'ADCtheme'
+html_theme = 'ADC'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

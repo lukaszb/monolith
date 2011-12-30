@@ -31,7 +31,7 @@ class CompletionCommand(BaseCommand):
             'ENV_VAR_NAME': self.get_env_var_name()}
 
     def handle(self, namespace):
-        self.stream.write(unicode(self.get_completion_snippet()))
+        self.stdout.write(unicode(self.get_completion_snippet()))
 
     def post_register(self, manager):
         manager.completion = True
