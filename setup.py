@@ -27,7 +27,7 @@ setup(
     url='https://github.com/lukaszb/monolith',
     author='Lukasz Balcerzak',
     author_email='lukaszbalcerzak@gmail.com',
-    description='FOOBAR',
+    description=monolith.__doc__,
     long_description=long_description,
     zip_safe=False,
     packages=find_packages(),
