@@ -28,14 +28,14 @@ class TestExecutionManager(unittest.TestCase):
                 expected[key]))
 
     def setUp(self):
-        self.manager = ExecutionManager(['foobar'], stream=StringIO())
+        self.manager = ExecutionManager(['foobar'], stderr=StringIO())
 
     def test_init_prog_name(self):
         self.assertEqual(self.manager.prog_name, 'foobar')
 
-    def test_init_stream(self):
+    def test_init_stderr(self):
         manager = ExecutionManager()
-        self.assertEqual(manager.stream, sys.stderr)
+        self.assertEqual(manager.stderr, sys.stderr)
 
     def test_default_argv(self):
         with mock.patch.object(sys, 'argv', ['vcs', 'foo', 'bar']):
@@ -52,7 +52,7 @@ class TestExecutionManager(unittest.TestCase):
         self.assertIsInstance(parser, argparse.ArgumentParser)
         self.assertEqual(parser.prog, 'foobar') # argv[0]
         self.assertEqual(parser.usage, 'foo bar')
-        self.assertEqual(parser.stream, self.manager.stream)
+        self.assertEqual(parser.stream, self.manager.stderr)
 
     def test_register(self):
         Command = type('Command', (BaseCommand,), {})

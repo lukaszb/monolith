@@ -44,7 +44,7 @@ class TestAutocomplete(unittest.TestCase):
     def setUp(self):
         self.stream = io.StringIO()
         self.stdout = io.StringIO()
-        self.manager = ExecutionManager(stream=self.stream, stdout=self.stdout)
+        self.manager = ExecutionManager(stderr=self.stream, stdout=self.stdout)
         self.manager
         Command = type('Command', (BaseCommand,), {})
         CompCommand = type('CompCommand', (CompletionCommand,), {})

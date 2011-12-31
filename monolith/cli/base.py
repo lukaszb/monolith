@@ -44,13 +44,13 @@ class ExecutionManager(object):
     completion_env_var_name = ''
     parser_cls = Parser
 
-    def __init__(self, argv=None, stream=None, stdout=None):
+    def __init__(self, argv=None, stderr=None, stdout=None):
         if argv is None:
             argv = [a for a in sys.argv]
         self.prog_name = os.path.basename(argv[0])
         self.argv = argv[1:]
         self.registry = {}
-        self.stream = stream or sys.stderr
+        self.stderr = stderr or sys.stderr
         self.stdout = stdout or sys.stdout
 
         for name, Command in self.get_commands_to_register().items():
@@ -68,7 +68,7 @@ class ExecutionManager(object):
         *ExecutionManager*.
         """
         parser = self.parser_cls(prog=self.prog_name, usage=self.get_usage(),
-            stream=self.stream)
+            stream=self.stderr)
         subparsers = parser.add_subparsers(
             title='subcommands',
         )
@@ -179,9 +179,9 @@ class BaseCommand(object):
     help = ''
     args = []
 
-    def __init__(self, prog_name=None, stream=None):
+    def __init__(self, prog_name=None, stdout=None):
         self.prog_name = prog_name or ''
-        self.stdout = stream or sys.stdout
+        self.stdout = stdout or sys.stdout
 
     def get_args(self):
         """

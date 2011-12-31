@@ -30,3 +30,10 @@ LabelCommand
 .. autoclass:: monolith.cli.LabelCommand
    :members:
 
+SingleLabelCommand
+------------------
+
+
+.. autoclass:: monolith.cli.SingleLabelCommand
+   :members:
+
