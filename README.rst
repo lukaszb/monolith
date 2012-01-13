@@ -32,7 +32,7 @@ Example
             print("A %s" % label, file=self.stdout)
 
 
-    def get_manager(**kwargs):
+    def main(**kwargs):
         manager = ExecutionManager(**kwargs)
         manager.register('add', AddCommand)
         manager.register('completion', CompletionCommand),
