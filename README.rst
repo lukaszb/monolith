@@ -1,3 +1,5 @@
+.. image:: https://secure.travis-ci.org/lukaszb/monolith.png?branch=master
+  :target: http://travis-ci.org/lukaszb/monolith
 
 Monolith
 ========
