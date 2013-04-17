@@ -3,7 +3,8 @@
 .. testsetup:: *
 
     from __future__ import print_function
-    from monolith.cli import ExecutionManager, BaseCommand, LabelCommand
+    from monolith.cli import SimpleExecutionManager, ExecutionManager, BaseCommand, LabelCommand
+    from monolith.tests.test_cli import AnotherDummyCommand
 
 
 Usage
@@ -82,4 +83,21 @@ Complete example
 ----------------
 
 .. literalinclude:: ../examples/git.py
+
+
+Simple execution manager
+------------------------
+
+.. versionadded:: 0.2
+
+There is also possibility to use simple execution manager for more complex
+programs, i.e. if we create a package and put our commands in separate modules
+we can use *string to classes* instead of importing all command classes (you
+can still use imported commands too)
+
+.. doctest::
+
+    >>> manager = SimpleExecutionManager(program='foobar', commands={'sub-command': 'monolith.tests.test_cli.DummyCommand', 'another-sub-command': AnotherDummyCommand})
+    >>> manager.get_commands_to_register()
+    {'sub-command': <class 'monolith.tests.test_cli.DummyCommand'>, 'another-sub-command': <class 'monolith.tests.test_cli.AnotherDummyCommand'>}
 

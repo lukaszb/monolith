@@ -10,6 +10,13 @@ monolith.cli
    :members:
 
 
+SimpleExecutionManager
+----------------------
+
+.. autoclass:: monolith.cli.SimpleExecutionManager
+   :members:
+
+
 ExecutionManager
 ----------------
 

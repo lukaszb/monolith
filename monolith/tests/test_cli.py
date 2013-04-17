@@ -5,6 +5,7 @@ import argparse
 from monolith.compat import unittest
 from monolith.cli.base import arg
 from monolith.cli.base import ExecutionManager
+from monolith.cli.base import SimpleExecutionManager
 from monolith.cli.base import BaseCommand
 from monolith.cli.base import LabelCommand
 from monolith.cli.base import SingleLabelCommand
@@ -14,6 +15,10 @@ from io import StringIO
 
 
 class DummyCommand(BaseCommand):
+    pass
+
+
+class AnotherDummyCommand(BaseCommand):
     pass
 
 
@@ -154,6 +159,23 @@ class TestExecutionManager(unittest.TestCase):
             self.manager.execute()
         namespace = Command.handle.call_args[0][0]
         Command.handle.assert_called_once_with(namespace)
+
+
+class TestSimpleExecutionManager(unittest.TestCase):
+
+    def test_get_commands_to_register(self):
+        # importing dummy commands to local namespace so they have full class
+        # paths properly set
+        from monolith.tests.test_cli import DummyCommand
+        from monolith.tests.test_cli import AnotherDummyCommand
+        manager = SimpleExecutionManager('git', {
+            'push': DummyCommand,
+            'pull': 'monolith.tests.test_cli.AnotherDummyCommand',
+        })
+        self.assertDictEqual(manager.get_commands_to_register(), {
+            'push': DummyCommand,
+            'pull': AnotherDummyCommand,
+        })
 
 
 class TestBaseCommand(unittest.TestCase):

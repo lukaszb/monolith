@@ -5,6 +5,7 @@ from collections import namedtuple
 from monolith.compat import OrderedDict
 from monolith.compat import unicode
 from monolith.cli.exceptions import AlreadyRegistered
+from monolith.utils.imports import get_class
 
 
 Argument = namedtuple('Argument', 'args kwargs')
@@ -161,6 +162,33 @@ class ExecutionManager(object):
                 [name for name in cmd_names if name.startswith(current)])))
 
         sys.exit(1)
+
+
+class SimpleExecutionManager(ExecutionManager):
+
+    def __init__(self, program, commands):
+        """
+        :param program: name of the program under which commands would be
+          executed (usually name of the program).
+        :param commands: dictionary mapping subcommands to proper command
+          classes. Values can be string - in that case proper command class
+          would be importer and used. Example::
+
+              {
+                  'subcommand1': SomeCommand,
+                  'subcommand2': 'myprogram.commands.another.AnotherCommand',
+              }
+        """
+        self.simple_commands = commands
+        super(SimpleExecutionManager, self).__init__([program])
+
+    def get_commands_to_register(self):
+        """
+        Returns dictionary with commands given during construction. If value is
+        a string, it would be converted into proper class pointer.
+        """
+        return dict((key, get_class(value)) for key, value in
+            self.simple_commands.items())
 
 
 class BaseCommand(object):
