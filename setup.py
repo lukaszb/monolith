@@ -33,6 +33,7 @@ setup(
     packages=find_packages(),
     scripts=[],
     test_suite='monolith.tests.collector',
+    tests_require=['mock'],
     install_requires=install_requires,
     include_package_data=True,
     classifiers=[
