@@ -21,23 +21,34 @@ Example
     This is completely fake command.
     """
     from __future__ import print_function
-    from __future__ import unicode_literals
-    from monolith.cli import ExecutionManager
+    from monolith.cli import SimpleExecutionManager
+    from monolith.cli import BaseCommand
     from monolith.cli import LabelCommand
     from monolith.cli import arg
-    from monolith.cli import CompletionCommand
-
 
     class AddCommand(LabelCommand):
         
         def handle_label(self, label, namespace):
-            print("A %s" % label, file=self.stdout)
+            print("A %s" % label)
 
 
-    def main(**kwargs):
-        manager = ExecutionManager(**kwargs)
-        manager.register('add', AddCommand)
-        manager.register('completion', CompletionCommand),
+    class CommitCommand(BaseCommand):
+        args = BaseCommand.args + [
+            arg('-a', '--add', action='store_true', default=False),
+            arg('-m', '--message', help="Commit's message", required=True),
+        ]
+
+        def handle(self, namespace):
+            print('Commit message: %r' % namespace.message)
+            if namespace.add:
+                print(' * add switch given!')
+
+
+    def main():
+        manager = SimpleExecutionManager('mygit', commands={
+            'add': AddCommand,
+            'commit': CommitCommand,
+        })
         manager.execute()
 
     if __name__ == '__main__':
