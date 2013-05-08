@@ -10,6 +10,9 @@ management commands, however monolith uses *argparse* instead of *optparse*).
 
 Supported Python versions are 2.6/2.7, 3.2+ and PyPy.
 
+Latest documentation can be found at https://monolith.readthedocs.org/en/latest/.
+
+
 Example
 -------
 
