@@ -77,6 +77,7 @@ class ExecutionManager(object):
             cmdparser = subparsers.add_parser(name, help=command.help)
             for argument in command.get_args():
                 cmdparser.add_argument(*argument.args, **argument.kwargs)
+            command.setup_parser(parser, cmdparser)
             cmdparser.set_defaults(func=command.handle)
 
         return parser
@@ -217,6 +218,17 @@ class BaseCommand(object):
         it returns ``self.args``.
         """
         return self.args or []
+
+    def setup_parser(self, parser, cmdparser):
+        """
+        This would be called when command is registered by ExecutionManager
+        after arguments from ``get_args`` are processed.
+
+        Default implementation does nothing.
+
+        :param parser: Global argparser.ArgumentParser
+        :param cmdparser: Subparser related with this command
+        """
 
     def handle(self, namespace):
         """

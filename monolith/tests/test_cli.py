@@ -59,6 +59,15 @@ class TestExecutionManager(unittest.TestCase):
         self.assertEqual(parser.usage, 'foo bar')
         self.assertEqual(parser.stream, self.manager.stderr)
 
+    def test_get_parser_calls_setup_parser(self):
+        class DummyCommand(BaseCommand):
+            pass
+
+        self.manager.register('foo', DummyCommand)
+        with mock.patch.object(DummyCommand, 'setup_parser') as setup_parser:
+            self.manager.get_parser()
+            self.assertTrue(setup_parser.called)
+
     def test_register(self):
         Command = type('Command', (BaseCommand,), {})
         self.manager.register('foo', Command)
