@@ -5,6 +5,7 @@ from collections import namedtuple
 from monolith.compat import OrderedDict
 from monolith.compat import unicode
 from monolith.cli.exceptions import AlreadyRegistered
+from monolith.cli.exceptions import CommandError
 from monolith.utils.imports import get_class
 
 
@@ -130,7 +131,7 @@ class ExecutionManager(object):
         parser = self.get_parser()
         args = [cmd] + list(argv)
         namespace = parser.parse_args(args)
-        namespace.func(namespace)
+        self.run_command(namespace)
 
     def execute(self, argv=None):
         """
@@ -141,7 +142,14 @@ class ExecutionManager(object):
         parser = self.get_parser()
         namespace = parser.parse_args(argv)
         if hasattr(namespace, 'func'):
+            self.run_command(namespace)
+
+    def run_command(self, namespace):
+        try:
             namespace.func(namespace)
+        except CommandError as err:
+            sys.stderr.write('ERROR: %s\n' % err.message)
+            sys.exit(err.code)
 
     def autocomplete(self):
         """

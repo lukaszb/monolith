@@ -7,6 +7,7 @@ from monolith.cli.base import arg
 from monolith.cli.base import ExecutionManager
 from monolith.cli.base import SimpleExecutionManager
 from monolith.cli.base import BaseCommand
+from monolith.cli.base import CommandError
 from monolith.cli.base import LabelCommand
 from monolith.cli.base import SingleLabelCommand
 from monolith.cli.base import Parser
@@ -153,6 +154,24 @@ class TestExecutionManager(unittest.TestCase):
         self.assertTrue(Command.handle.called)
         namespace = Command.handle.call_args[0][0]
         self.assertTrue(namespace.force)
+
+    @mock.patch('monolith.cli.base.sys.stderr')
+    def test_call_command_fails(self, stderr):
+
+        class Command(BaseCommand):
+            args = [
+                arg('-f', '--force', action='store_true', default=False),
+            ]
+            name = 'add'
+
+            def handle(self, namespace):
+                raise CommandError('foo bar baz', 92)
+
+        self.manager.register('add', Command)
+        with self.assertRaises(SystemExit):
+            self.manager.call_command('add', '-f')
+
+        stderr.write.assert_called_once_with('ERROR: foo bar baz\n')
 
     def test_execute_calls_handle_command(self):
 

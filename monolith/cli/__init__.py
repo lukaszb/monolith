@@ -1,4 +1,5 @@
 from .base import BaseCommand
+from .base import CommandError
 from .base import ExecutionManager
 from .base import SimpleExecutionManager
 from .base import LabelCommand
@@ -14,6 +15,7 @@ __all__ = [
     'arg',
     'Parser',
     'BaseCommand',
+    'CommandError',
     'LabelCommand',
     'SingleLabelCommand',
     'CompletionCommand',
