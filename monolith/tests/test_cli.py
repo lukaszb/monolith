@@ -73,6 +73,8 @@ class TestExecutionManager(unittest.TestCase):
         Command = type('Command', (BaseCommand,), {})
         self.manager.register('foo', Command)
         self.assertRegistryClassesEqual(self.manager.registry, {'foo': Command})
+        command = self.manager.registry['foo']
+        self.assertEqual(command.manager, self.manager)
 
     def test_register_raise_if_command_with_same_name_registered(self):
         Command = type('Command', (BaseCommand,), {})

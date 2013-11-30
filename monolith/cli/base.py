@@ -102,6 +102,7 @@ class ExecutionManager(object):
         if not force and name in self.registry:
             raise AlreadyRegistered('Command %r is already registered' % name)
         command = Command(self.prog_name, self.stdout)
+        command.manager = self
         self.registry[name] = command
         command.post_register(self)
 
